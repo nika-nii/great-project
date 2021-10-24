@@ -2,3 +2,16 @@
     height: 40vh;
     object-fit: cover;
 }
+
+.menu-icon-size img{
+    height: auto;
+    width: 4em ;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.col-my-icons{
+    margin-top: 1%;
+    margin-bottom: 1%;
+}
