@@ -14,3 +14,9 @@
 .card-resize{
     width: 100%;
 }
+
+.icon-resize img{
+    width: 3em;
+    height: auto;
+    margin-bottom: 1%;
+}
