@@ -27,8 +27,10 @@ jobs:
           DEPLOY_SSH_PORT: ${{ secrets.DEPLOY_SSH_PORT }}
           DEPLOY_SSH_KNOWN: ${{ secrets.DEPLOY_SSH_KNOWN }}
       
-      - name: copy test file
+      - name: checkout code
         uses: actions/checkout@v2
+
+      - name: copy test file
         run: | 
           scp -r $GITHUB_WORKSPACE runner:
           ssh runner 'ls -laht'
