@@ -1,0 +1,35 @@
+name: github ssh action
+
+on: [push]
+
+jobs:
+  deploy:
+    name: deploy to server 
+    runs-on: ubuntu-latest
+    steps:
+      - name: configure ssh
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$DEPLOY_SSH_KEY" > ~/.ssh/deploy
+          echo "$DEPLOY_SSH_KNOWN" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/deploy
+          chmod 600 ~/.ssh/known_hosts
+          cat >>~/.ssh/config <<END
+          Host runner
+            HostName $DEPLOY_SSH_HOST
+            Port $DEPLOY_SSH_PORT
+            User deploy
+            IdentityFile ~/.ssh/deploy
+          END
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+          DEPLOY_SSH_PORT: ${{ secrets.DEPLOY_SSH_PORT }}
+          DEPLOY_SSH_KNOWN: ${{ secrets.DEPLOY_SSH_KNOWN }}
+      
+      - name: copy test file
+        uses: actions/checkout@v2
+        run: | 
+          scp -r $GITHUB_WORKSPACE runner:
+          ssh runner 'ls -laht'
+
