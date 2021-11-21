@@ -1,0 +1,22 @@
+version: "3.9"
+services:
+  bot:
+    build:
+      dockerfile: Dockerfile
+      context: ./bot
+    env_file:
+      - .env
+  backend:
+    build:
+      dockerfile: Dockerfile
+      context: ./backend
+    depends_on:
+      - bot
+    ports:
+      - 8000:80
+  frontend:
+    build:
+      dockerfile: Dockerfile
+      context: ./frontend
+    ports:
+      - 80:80
