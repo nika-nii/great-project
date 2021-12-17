@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <Page />
+    <Page url="http://localhost:8000/api/items"/>
   </div>
 </template>
 
