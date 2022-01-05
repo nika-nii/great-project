@@ -14,7 +14,7 @@ def echo_all(message):
 
 @bot.message_handler(commands=['show'])
 def get_news_titles(message):
-    response = requests.get('http://backend/news/').json()
+    response = requests.get('http://localhost:8000/news/').json()
     reply = 'Вот что я тебе скажу. \n'
     for news_item in response:
         reply += f'id: {news_item["id"]}, title: {news_item["title"]}\n'
@@ -22,7 +22,7 @@ def get_news_titles(message):
 
 @bot.message_handler(func=lambda m: True)
 def post_news_title(message):
-    response = requests.post('http://backend/news/', json={'title': message.text, 'category': '', 'text': ''})
+    response = requests.post('http://localhost:8000/news/', json={'title': message.text, 'category': '', 'text': ''})
     if response.status_code == 200:
         bot.reply_to(message, message.text)
 
