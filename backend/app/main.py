@@ -4,9 +4,11 @@ from fastapi import FastAPI
 from pydantic import BaseModel, Field
 from bson import ObjectId
 from fastapi.middleware.cors import CORSMiddleware
+import datetime
 
 DB = "course"
 NEWS_COLLECTION = "news"
+DOCS_COLLECTION = "docs"
 
 app = FastAPI()
 
@@ -54,6 +56,40 @@ class Post(BaseModel):
             ObjectId: str
         }
 
+class Doc(BaseModel):
+    id: Optional[PyObjectId] = Field(alias="_id")
+    title: str
+    type: str
+    file_path: str
+    author: str
+    class Config:
+        arbitrary_types_allowed = True
+        json_encoders = {
+            ObjectId: str
+        }
+
+class Breakfast(BaseModel):
+    hot_meal: str
+    hot_drink: str
+    fruit: str
+    milk: str
+    bakery: str
+
+class Dinner(BaseModel):
+    hot_meal_first: str
+    hot_meal_second: str
+    hot_drink: str
+    snack_one: str
+    snack_two: str
+    bread: str
+    drink: str
+
+class Meal(BaseModel):
+    id: Optional[PyObjectId] = Field(alias="_id")
+    date: datetime.date
+    breakfast: Breakfast
+    dinner: Dinner
+
 @app.post("/news/")
 async def create_post(post_in: Post):
     with MongoClient() as client:
@@ -84,3 +120,33 @@ async def show_post(news_id: PyObjectId):
         collection = client[DB][NEWS_COLLECTION]
         item = collection.find_one({"_id": news_id})
         return Post(**item)
+
+@app.post("/docs/")
+async def create_doc(doc_in: Doc):
+    with MongoClient() as client:
+        collection = client[DB][DOCS_COLLECTION]
+        if (hasattr(doc_in, "id")):
+            delattr(doc_in, "id")
+        result = collection.insert_one(doc_in.dict(by_alias=True))
+        res_id = result.inserted_id
+        res_obj = collection.find_one(res_id)
+        print(res_obj)
+        doc_in.id = res_id
+        return {"doc_in": doc_in}
+
+@app.get("/docs/", response_model=List[Doc])
+async def show_docs():
+    with MongoClient() as client:
+        collection = client[DB][DOCS_COLLECTION]
+        docs_list = collection.find()
+        pretty_list = []
+        for docs in docs_list :
+            pretty_list.append(Doc(**docs))
+        return pretty_list
+
+@app.get("/docs/{docs_id}")
+async def show_doc(docs_id: PyObjectId):
+    with MongoClient() as client:
+        collection = client[DB][DOCS_COLLECTION]
+        item = collection.find_one({"_id": docs_id})
+        return Doc(**item)
