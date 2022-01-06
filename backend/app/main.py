@@ -79,5 +79,8 @@ async def show_posts():
         return pretty_list
 
 @app.get("/news/{news_id}")
-async def show_post(news_id: int):
-    return news[news_id]
+async def show_post(news_id: PyObjectId):
+    with MongoClient() as client:
+        collection = client[DB][NEWS_COLLECTION]
+        item = collection.find_one({"_id": news_id})
+        return Post(**item)

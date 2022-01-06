@@ -11,7 +11,7 @@ import { baseUrl } from "./config";
 export default {
   name: "App",
   components: {
-    Page,
+    Page
   },
   data() {
     return {
