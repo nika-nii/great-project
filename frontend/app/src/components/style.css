@@ -20,3 +20,7 @@
     height: auto;
     margin-bottom: 1%;
 }
+
+.my-hover:hover{
+    background-color: #F8F9FA;
+}

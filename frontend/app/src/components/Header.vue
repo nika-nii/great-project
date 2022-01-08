@@ -5,7 +5,7 @@
         aria-label="Навигация"
       >
         <div class="container-fluid">
-          <a class="navbar-brand" href="#">Лицей 32</a>
+          <a class="navbar-brand" href="#">МБОУ "Лицей №32"</a>
           <button
             class="navbar-toggler"
             type="button"
