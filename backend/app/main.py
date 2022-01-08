@@ -9,6 +9,7 @@ import datetime
 DB = "course"
 NEWS_COLLECTION = "news"
 DOCS_COLLECTION = "docs"
+MEALS_COLLECTION = "meals"
 
 app = FastAPI()
 
@@ -86,9 +87,14 @@ class Dinner(BaseModel):
 
 class Meal(BaseModel):
     id: Optional[PyObjectId] = Field(alias="_id")
-    date: datetime.date
+    date: datetime.datetime
     breakfast: Breakfast
     dinner: Dinner
+    class Config:
+        arbitrary_types_allowed = True
+        json_encoders = {
+            ObjectId: str
+        }
 
 @app.post("/news/")
 async def create_post(post_in: Post):
@@ -150,3 +156,23 @@ async def show_doc(docs_id: PyObjectId):
         collection = client[DB][DOCS_COLLECTION]
         item = collection.find_one({"_id": docs_id})
         return Doc(**item)
+
+@app.post("/meals/")
+async def create_meal(meal_in: Meal):
+    with MongoClient() as client:
+        collection = client[DB][MEALS_COLLECTION]
+        if (hasattr(meal_in, "id")):
+            delattr(meal_in, "id")
+        result = collection.insert_one(meal_in.dict(by_alias=True))
+        res_id = result.inserted_id
+        res_obj = collection.find_one(res_id)
+        print(res_obj)
+        meal_in.id = res_id
+        return {"meal_in": meal_in}
+
+@app.get("/meals/{meal_id}")
+async def show_meal(meal_id: PyObjectId):
+    with MongoClient() as client:
+        collection = client[DB][MEALS_COLLECTION]
+        item = collection.find_one({"_id": meal_id})
+        return Meal(**item)
