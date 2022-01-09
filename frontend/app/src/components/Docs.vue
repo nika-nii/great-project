@@ -7,8 +7,7 @@
           <nav aria-label="breadcrumb">
             <ol class="breadcrumb mt-3">
               <li class="breadcrumb-item">
-                <!-- <a href="#"><font-awesome-icon :icon="['fas', 'fa-home']" />&nbsp;</a> -->
-                <a href="#" class="link-secondary text-decoration-none">Домой</a>
+                <a href="#" class="link-secondary text-decoration-none"><font-awesome-icon :icon="['fas', 'home']" />&nbsp;Домой</a>
               </li>
               <li class="breadcrumb-item active" aria-current="page">
                 Документы
