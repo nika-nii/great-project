@@ -21,9 +21,8 @@
           <div class="collapse navbar-collapse" id="navbarsExample04">
             <ul class="navbar-nav me-auto mb-2 mb-md-0">
               <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="#"
-                  >Главная</a
-                >
+                <router-link to="/" class="nav-link active" aria-current="page">
+                  Главная</router-link>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="#">Новости</a>
@@ -47,7 +46,7 @@
                   >Меню</a
                 >
                 <ul class="dropdown-menu" aria-labelledby="dropdown04">
-                  <li><a class="dropdown-item" href="#"><router-link to="/docs">Документы</router-link></a></li>
+                  <li><router-link class="dropdown-item" to="/docs">Документы</router-link></li>
                   <li><a class="dropdown-item" href="localhost:8080/docs">Опция 2</a></li>
                   <li><a class="dropdown-item" href="#">Опция 3</a></li>
                 </ul>

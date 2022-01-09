@@ -1,17 +1,21 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import App from './App.vue'
+import Page from './components/Page.vue'
 //import Meals from './components/Meals.vue'
 import Docs from './components/Docs.vue'
 import "bootstrap/dist/css/bootstrap.min.css"
 import "bootstrap"
+
 import {
     library
 } from '@fortawesome/fontawesome-svg-core'
+
 import {
     faVk,
     faInstagram
 } from '@fortawesome/free-brands-svg-icons'
+
 import {
     faEnvelope,
     faMapMarkerAlt,
@@ -24,9 +28,14 @@ import {
     faDesktop,
     faHome
 } from '@fortawesome/free-solid-svg-icons'
+
 import {
     FontAwesomeIcon
 } from '@fortawesome/vue-fontawesome'
+
+import {
+    baseUrl
+} from "./config";
 
 library.add(faVk, faInstagram, faEnvelope, faPhoneAlt, faMapMarkerAlt, faSchool, faInfo, faScroll, faCalendarAlt, faCamera, faDesktop, faHome)
 
@@ -39,7 +48,27 @@ Vue.config.productionTip = false
 const router = new VueRouter({
     routes: [
         //{ path: '/meals', component: Meals},
-        { path: '/docs', omponent: Docs}
+        {
+            path: '/',
+            component: Page,
+            props: {
+                url: baseUrl + '/news'
+            }
+        },
+        {
+            path: '/docs',
+            component: Docs,
+            props: {
+                url: baseUrl + '/docs'
+            }
+        },
+        {
+            path: '*',
+            component: Page,
+            props: {
+                url: baseUrl + '/news'
+            }
+        }
     ]
 })
 
