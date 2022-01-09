@@ -2,10 +2,11 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import App from './App.vue'
 import Page from './components/Page.vue'
-//import Meals from './components/Meals.vue'
+import Meals from './components/Meals.vue'
 import Docs from './components/Docs.vue'
 import "bootstrap/dist/css/bootstrap.min.css"
 import "bootstrap"
+import 'vue2-datepicker/locale/ru';
 
 import {
     library
@@ -26,7 +27,8 @@ import {
     faCalendarAlt,
     faCamera,
     faDesktop,
-    faHome
+    faHome,
+    faFilePdf
 } from '@fortawesome/free-solid-svg-icons'
 
 import {
@@ -37,7 +39,7 @@ import {
     baseUrl
 } from "./config";
 
-library.add(faVk, faInstagram, faEnvelope, faPhoneAlt, faMapMarkerAlt, faSchool, faInfo, faScroll, faCalendarAlt, faCamera, faDesktop, faHome)
+library.add(faVk, faInstagram, faEnvelope, faPhoneAlt, faMapMarkerAlt, faSchool, faInfo, faScroll, faCalendarAlt, faCamera, faDesktop, faHome, faFilePdf)
 
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 
@@ -47,7 +49,6 @@ Vue.config.productionTip = false
 
 const router = new VueRouter({
     routes: [
-        //{ path: '/meals', component: Meals},
         {
             path: '/',
             component: Page,
@@ -59,7 +60,14 @@ const router = new VueRouter({
             path: '/docs',
             component: Docs,
             props: {
-                url: baseUrl + '/docs'
+                url: baseUrl + '/docs/'
+            }
+        },
+        {
+            path: '/meals',
+            component: Meals,
+            props: {
+                url: baseUrl + '/meals'
             }
         },
         {

@@ -47,8 +47,7 @@
                 >
                 <ul class="dropdown-menu" aria-labelledby="dropdown04">
                   <li><router-link class="dropdown-item" to="/docs">Документы</router-link></li>
-                  <li><a class="dropdown-item" href="localhost:8080/docs">Опция 2</a></li>
-                  <li><a class="dropdown-item" href="#">Опция 3</a></li>
+                  <li><router-link class="dropdown-item" to="/meals">Питание</router-link></li>
                 </ul>
               </li>
             </ul>

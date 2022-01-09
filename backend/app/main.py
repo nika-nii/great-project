@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel, Field
 from bson import ObjectId
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 import datetime
 
 DB = "course"
@@ -14,6 +15,8 @@ MEALS_COLLECTION = "meals"
 app = FastAPI()
 
 origins = ["*"]
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.add_middleware(
     CORSMiddleware,
@@ -62,6 +65,7 @@ class Doc(BaseModel):
     title: str
     type: str
     file_path: str
+    date: datetime.datetime
     author: str
     class Config:
         arbitrary_types_allowed = True
@@ -76,19 +80,25 @@ class Breakfast(BaseModel):
     milk: str
     bakery: str
 
+class SecondBreakfast(BaseModel):
+    hot_drink: str
+    snack: str
+
 class Dinner(BaseModel):
     hot_meal_first: str
     hot_meal_second: str
-    hot_drink: str
-    snack_one: str
-    snack_two: str
-    bread: str
+    garnish: str
     drink: str
+    bread_white: str
+    bread_black: str
+    snack: str
+
 
 class Meal(BaseModel):
     id: Optional[PyObjectId] = Field(alias="_id")
     date: datetime.datetime
     breakfast: Breakfast
+    second_breakfast: SecondBreakfast
     dinner: Dinner
     class Config:
         arbitrary_types_allowed = True
@@ -146,7 +156,7 @@ async def show_docs():
         collection = client[DB][DOCS_COLLECTION]
         docs_list = collection.find()
         pretty_list = []
-        for docs in docs_list :
+        for docs in docs_list:
             pretty_list.append(Doc(**docs))
         return pretty_list
 
