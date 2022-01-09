@@ -1,4 +1,5 @@
-from typing import List, Optional
+from typing import List, Optional, Union
+from pydantic.typing import NoneType
 from pymongo import MongoClient
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
@@ -130,7 +131,7 @@ async def show_posts():
             pretty_list.append(Post(**news))
         return pretty_list
 
-@app.get("/news/{news_id}")
+@app.get("/news/{news_id}", response_model=Post)
 async def show_post(news_id: PyObjectId):
     with MongoClient() as client:
         collection = client[DB][NEWS_COLLECTION]
@@ -160,7 +161,7 @@ async def show_docs():
             pretty_list.append(Doc(**docs))
         return pretty_list
 
-@app.get("/docs/{docs_id}")
+@app.get("/docs/{docs_id}", response_model=Doc)
 async def show_doc(docs_id: PyObjectId):
     with MongoClient() as client:
         collection = client[DB][DOCS_COLLECTION]
@@ -173,6 +174,7 @@ async def create_meal(meal_in: Meal):
         collection = client[DB][MEALS_COLLECTION]
         if (hasattr(meal_in, "id")):
             delattr(meal_in, "id")
+        meal_in.date = meal_in.date.replace(hour=21, minute=0, second=0, microsecond=0)
         result = collection.insert_one(meal_in.dict(by_alias=True))
         res_id = result.inserted_id
         res_obj = collection.find_one(res_id)
@@ -180,9 +182,19 @@ async def create_meal(meal_in: Meal):
         meal_in.id = res_id
         return {"meal_in": meal_in}
 
-@app.get("/meals/{meal_id}")
+@app.get("/meals/by_id/{meal_id}", response_model=Meal)
 async def show_meal(meal_id: PyObjectId):
     with MongoClient() as client:
         collection = client[DB][MEALS_COLLECTION]
         item = collection.find_one({"_id": meal_id})
         return Meal(**item)
+
+@app.get("/meals/by_date/{date}", response_model=Union[Meal, None])
+async def show_meal_by_date(date: datetime.datetime):
+    with MongoClient() as client:
+        collection = client[DB][MEALS_COLLECTION]
+        item = collection.find_one({"date": date})
+        if item:
+            return Meal(**item)
+        else:
+            return None

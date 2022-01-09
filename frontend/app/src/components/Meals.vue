@@ -33,39 +33,29 @@
           <div class="col-4">
             <p class="fw-bold">Выберите дату:</p>
             <date-picker
-              format="DD/MM/YYYY"
+              format="DD.MM.YYYY"
               lang="ru"
-              v-model="time1"
-              valueType="format"
+              v-model="day"
+              valueType="date"
+              @pick="fetchData"
             ></date-picker>
           </div>
         </div>
 
-        <table class="table mt-4">
-          <!-- <thead>
-            <tr>
-              <th scope="col">Прием пищи</th>
-              <th scope="col">Раздел</th>
-              <th scope="col">Блюдо</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th scope="row">Завтрак</th>
-              <td>Mark</td>
-              <td>Otto</td>
-            </tr>
-            <tr>
-              <th scope="row">Полдник</th>
-              <td>Jacob</td>
-              <td>Thornton</td>
-            </tr>
-            <tr>
-              <th scope="row">Обед</th>
-              <td>Jacob</td>
-              <td>Thornton</td>
-            </tr>
-          </tbody> -->
+        <div v-if="loading">
+          <p> Загрузка </p>
+        </div>
+
+        <div v-else-if="error">
+          <span class="text-danger">Произошла ошибка!</span>
+          <p class="text-warning"> {{ error }} </p>
+        </div>
+
+        <div v-else-if="!meal">
+          <p>На сегодня нет обедов</p>
+        </div>
+
+        <table v-else class="table mt-4">
 
           <thead>
             <tr>
@@ -78,65 +68,65 @@
             <tr>
               <th rowspan="5">Завтрак</th>
               <td scope="row">Горячее блюдо</td>
-              <td>A2</td>
+              <td>{{meal.breakfast.hot_meal}}</td>
             </tr>
             <tr>
               <td scope="row">Горячий напиток</td>
-              <td>A1</td>
+              <td>{{meal.breakfast.hot_drink}}</td>
             </tr>
             <tr>
               <td scope="row">Фрукт</td>
-              <td>A3</td>
+              <td>{{meal.breakfast.fruit}}</td>
             </tr>
             <tr>
               <td scope="row">Молочный продукт</td>
-              <td>A3</td>
+              <td>{{meal.breakfast.bakery}}</td>
             </tr>
             <tr>
               <td scope="row">Выпечка</td>
-              <td>A3</td>
+              <td>{{meal.breakfast.bakery}}</td>
             </tr>
           </tbody>
           <tbody>
             <tr>
               <th rowspan="2">Полдник</th>
               <td scope="row">Горячий напиток</td>
-              <td>A1</td>
+              <td>{{meal.second_breakfast.hot_drink}}</td>
             </tr>
             <tr>
               <td scope="row">Закуска</td>
-              <td>A2</td>
+              <td>{{meal.second_breakfast.snack}}</td>
             </tr>
           </tbody>
           <tbody>
             <tr>
               <th rowspan="7">Обед</th>
               <td scope="row">Первое блюдо</td>
-              <td>A1</td>
+              <td>{{meal.dinner.hot_meal_first}}</td>
             </tr>
             <tr>
               <td scope="row">Второе блюдо</td>
-              <td>A2</td>
+              <td>{{meal.dinner.hot_meal_second}}</td>
             </tr>
             <tr>
               <td scope="row">Гарнир</td>
-              <td>A2</td>
+              <td>{{meal.dinner.garnish}}</td>
             </tr>
             <tr>
               <td scope="row">Напиток</td>
-              <td>A2</td>
+              <td>{{meal.dinner.drink}}</td>
             </tr>
             <tr>
               <td scope="row">Хлеб белый</td>
-              <td>A2</td>
+              <td>{{meal.dinner.bread_white}}</td>
             </tr>
             <tr>
               <td scope="row">Хлеб черный</td>
-              <td>A2</td>
+              <td>{{meal.dinner.bread_black}}</td>
             </tr>
             <tr>
               <td scope="row">Закуска</td>
-              <td>A2</td>
+              <td>{{meal.dinner.snack}}</td>
             </tr>
           </tbody>
         </table>
@@ -168,11 +158,32 @@ export default {
     DatePicker,
   },
   data() {
+    var date = new Date()
+    date.setHours(0, 0, 0, 0)
     return {
-      time1: null,
-      time2: null,
-      time3: null,
+      day: date,
+      meal: null,
+      loading: null,
+      error: null
     };
   },
+  methods: {
+    fetchData() {
+      fetch(this.url + '/by_date/' + this.day.toISOString(), { //путь к api (обращение к серверу за данными)
+            headers: { 'Content-type': 'application/json' },
+            }).then(res=>res.json()).then((response) => {
+                this.meal = response;
+            }).then(() => {
+                this.loading = false
+            }).catch( (error) => {
+                this.error = error;
+                this.loading = false;
+            });
+    }
+  },
+  mounted() {
+    this.loading = true
+    this.fetchData();
+  }
 };
 </script>
