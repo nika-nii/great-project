@@ -3,7 +3,7 @@
       <div class="row align-items-center">
         <div class="my-2 col-sm-6 col-md-4 col-lg-2 col-xl-2 text-center">
           <p><font-awesome-icon :icon="['fas', 'school']" size="5x" /></p>
-          <p>Сведения об ОО</p>
+          <p><router-link to="/about" class="text-dark text-decoration-none">Сведения об ОО</router-link></p>
         </div>
         <div class="my-2 col-sm-6 col-md-4 col-lg-2 col-xl-2 text-center">
           <p><font-awesome-icon :icon="['fas', 'info']" size="5x" /></p>
@@ -11,7 +11,7 @@
         </div>
         <div class="my-2 col-sm-6 col-md-4 col-lg-2 col-xl-2 text-center">
           <p><font-awesome-icon :icon="['fas', 'scroll']" size="5x" /></p>
-          <p>Условия приема</p>
+          <p><router-link to="/rules" class="text-dark text-decoration-none">Правила приема</router-link></p>
         </div>
         <div class="my-2 col-sm-6 col-md-4 col-lg-2 col-xl-2 text-center">
           <p><font-awesome-icon :icon="['fas', 'calendar-alt']" size="5x" /></p>
@@ -23,7 +23,7 @@
         </div>
         <div class="my-2 col-sm-6 col-md-4 col-lg-2 col-xl-2 text-center">
           <p><font-awesome-icon :icon="['fas', 'desktop']" size="5x" /></p>
-          <p>Виртуальная школа</p>
+          <p><a href="https://www.vsopen.ru/" class="text-dark text-decoration-none">Виртуальная школа</a></p>
         </div>
       </div>
     </div>

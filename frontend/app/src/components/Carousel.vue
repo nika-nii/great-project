@@ -28,24 +28,24 @@
       </div>
       <div class="carousel-inner">
         <div class="carousel-item active">
-          <img src="../assets/01.jpg" class="d-block w-100" alt="..." />
+          <img src="../assets/l1.jpeg" class="d-block w-100" alt="..." />
           <div class="carousel-caption d-none d-md-block">
-            <h5>Добро пожаловать</h5>
+            <h5>Добро пожаловать на официальный сайт Лицея №32!</h5>
             <p>Это главная страница сайта</p>
           </div>
         </div>
         <div class="carousel-item">
-          <img src="../assets/02.jpg" class="d-block w-100" alt="..." />
+          <img src="../assets/l2.jpeg" class="d-block w-100" alt="..." />
           <div class="carousel-caption d-none d-md-block">
             <h5>Самые свежие новости</h5>
-            <p>Обновляются регулярно</p>
+            <p>Благодаря школьному телевидению обновляются регулярно</p>
           </div>
         </div>
         <div class="carousel-item">
-          <img src="../assets/03.jpg" class="d-block w-100" alt="..." />
+          <img src="../assets/l3.jpeg" class="d-block w-100" alt="..." />
           <div class="carousel-caption d-none d-md-block">
-            <h5>Документы и прочее</h5>
-            <p>Удобство и доступность</p>
+            <h5>Здесь вы найдете официальные документы</h5>
+            <p>Сертификаты, дипломы и т.д.</p>
           </div>
         </div>
       </div>

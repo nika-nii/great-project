@@ -4,6 +4,8 @@ import App from './App.vue'
 import Page from './components/Page.vue'
 import Meals from './components/Meals.vue'
 import Docs from './components/Docs.vue'
+import About from './components/About.vue'
+import Rules from './components/Rules.vue'
 import "bootstrap/dist/css/bootstrap.min.css"
 import "bootstrap"
 import 'vue2-datepicker/locale/ru';
@@ -75,6 +77,20 @@ const router = new VueRouter({
             component: Page,
             props: {
                 url: baseUrl + '/news'
+            }
+        },
+        {
+            path: '/about',
+            component: About,
+            props: {
+                url: baseUrl + '/about'
+            }
+        },
+        {
+            path: '/rules',
+            component: Rules,
+            props: {
+                url: baseUrl + '/rules'
             }
         }
     ]

@@ -21,6 +21,7 @@ import Carousel from "./Carousel.vue";
 import News from "./News.vue";
 import OrganizationsWebsites from "./OrganizationsWebsites.vue";
 
+
 export default {
   name: 'Page',
   props: ['url'],
