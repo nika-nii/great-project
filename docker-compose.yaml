@@ -6,6 +6,7 @@ services:
       context: ./bot
     env_file:
       - .env
+
   backend:
     build:
       dockerfile: Dockerfile
@@ -14,13 +15,20 @@ services:
       - bot
     ports:
       - 8000:80
+
   frontend:
     build:
       dockerfile: Dockerfile
       context: ./frontend
     ports:
       - 80:80
+
   mongo:
     image: mongo:4.4
+    volumes:
+      - mongo:/data/db
     ports:
       - 27017:27017
+
+volumes:
+  mongo:

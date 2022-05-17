@@ -47,7 +47,7 @@ def link_user_to_tg(user_id, tg_user_id):
 
 def create_admin(tg_user_id):
     users = db["users"]
-    users.insert_one({"tg_user_id": tg_user_id, "registration_token": "admin"})
+    users.insert_one({"tg_user_id": tg_user_id, "registration_token": "admin", "role": "admin"})
 
 def create_user(role, token):
     users = db["users"]

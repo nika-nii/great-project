@@ -11,7 +11,7 @@ main_menu_keyboard.add(
 
 # Переход в состояние регистрация
 registration_message = "Вам необходимо зарегистрироваться. Введите код приглашения"
-registration_keyboard = None
+registration_keyboard = types.ReplyKeyboardRemove()
 
 # Переход в состояние Добавление пользователя
 users_message = "Какие права будут выданы пользователю?"
@@ -30,6 +30,13 @@ news_category_keyboard = types.ReplyKeyboardRemove()
 
 news_text_message = "Введите текст статьи"
 news_text_keyboard = types.ReplyKeyboardRemove()
+
+# Переход в состояние Добавление документа
+documents_title_message = "Введите заголовок статьи"
+documents_title_keyboard = types.ReplyKeyboardRemove()
+
+documents_file_message = "Введите категорию"
+documents_file_keyboard = types.ReplyKeyboardRemove()
 
 # Переход в состояние Редактирование пользователя
 users_message = "Какие права будут выданы пользователю?"

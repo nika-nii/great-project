@@ -46,6 +46,13 @@ def register_user(message):
     if user:
         dbutils.link_user_to_tg(user["_id"], message.from_user.id)
         dbutils.set_state(message.chat.id, "main-menu")
+
+        bot.send_message(
+            message.chat.id, 
+            text = messages.main_menu_message,
+            reply_markup = messages.main_menu_keyboard
+            )
+
     else:
         if message.text == "admin":
             dbutils.create_admin(message.from_user.id)
@@ -175,24 +182,9 @@ def users(message):
         reply_markup = messages.main_menu_keyboard
         )
 
-# @bot.message_handler(commands=['show'])
-# def get_news_titles(message):
-#     response = requests.get(f'{BACKEND_URL}/news/').json()
-#     reply = 'Вот что я тебе скажу. \n'
-#     for news_item in response:
-#         reply += f'id: {news_item["_id"]}, title: {news_item["title"]}\n'
-#     bot.reply_to(message, reply)
-
-# @bot.message_handler(func=lambda m: True)
-# def post_news_title(message):
-#     response = requests.post(f'{BACKEND_URL}/news/', json={'title': message.text, 'category': '', 'text': ''})
-#     if response.status_code == 200:
-#         bot.reply_to(message, message.text)
-
 def generate_random_string(length):
     letters = string.ascii_lowercase
     rand_string = ''.join(random.choice(letters) for i in range(length))
     return rand_string
-
 
 bot.infinity_polling()
