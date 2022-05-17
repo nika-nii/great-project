@@ -15,11 +15,11 @@
         </div>
         <div class="my-2 col-sm-6 col-md-4 col-lg-2 col-xl-2 text-center">
           <p><font-awesome-icon :icon="['fas', 'calendar-alt']" size="5x" /></p>
-          <p>Календарь</p>
+          <p>Календарь мероприятий</p>
         </div>
         <div class="my-2 col-sm-6 col-md-4 col-lg-2 col-xl-2 text-center">
           <p><font-awesome-icon :icon="['fas', 'camera']" size="5x" /></p>
-          <p>Видео</p>
+          <p>Дополнительное образование</p>
         </div>
         <div class="my-2 col-sm-6 col-md-4 col-lg-2 col-xl-2 text-center">
           <p><font-awesome-icon :icon="['fas', 'desktop']" size="5x" /></p>

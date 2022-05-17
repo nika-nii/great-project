@@ -1,7 +1,7 @@
 <template>
     <div class="container">
       <div class="row justify-items-center">
-        <p class="fs-2 text-decoration-underline text-start">Новости</p>
+        <p class="fs-2 text-center text-uppercase">Новости</p>
       </div>
       <div class="row">
         <div v-if="loading">
@@ -22,7 +22,7 @@
               <h5 class="card-title">{{ item.title }}</h5>
               <h6 class="card-subtitle mb-2 text-muted">{{ item.category }}</h6>
               <p class="card-text">{{ item.text }}</p>
-              <a href="#" class="card-link">Продолжить чтение</a>
+              <a href="#" class="card-link"><router-link to="/news/post" class="text-decoration-none">Продолжить чтение</router-link></a>
             </div>
           </div>
         </div>

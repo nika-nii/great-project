@@ -6,6 +6,7 @@ import Meals from './components/Meals.vue'
 import Docs from './components/Docs.vue'
 import About from './components/About.vue'
 import Rules from './components/Rules.vue'
+import Post from './components/Post.vue'
 import "bootstrap/dist/css/bootstrap.min.css"
 import "bootstrap"
 import 'vue2-datepicker/locale/ru';
@@ -91,6 +92,13 @@ const router = new VueRouter({
             component: Rules,
             props: {
                 url: baseUrl + '/rules'
+            }
+        },
+        {
+            path: '/news/post',
+            component: Post,
+            props: {
+                url: baseUrl + '/news/post'
             }
         }
     ]
