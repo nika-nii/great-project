@@ -3,4 +3,4 @@ WORKDIR /code
 COPY ./requirements.txt /code/requirements.txt
 RUN pip install --disable-pip-version-check --no-cache-dir --upgrade -r /code/requirements.txt
 COPY ./app /code
-CMD ["python", "echo_bot.py"]
+CMD ["python", "main.py"]
