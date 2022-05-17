@@ -32,10 +32,10 @@ news_text_message = "Введите текст статьи"
 news_text_keyboard = types.ReplyKeyboardRemove()
 
 # Переход в состояние Добавление документа
-documents_title_message = "Введите заголовок статьи"
+documents_title_message = "Введите название документа"
 documents_title_keyboard = types.ReplyKeyboardRemove()
 
-documents_file_message = "Введите категорию"
+documents_file_message = "Прикрепите файл с документом"
 documents_file_keyboard = types.ReplyKeyboardRemove()
 
 # Переход в состояние Редактирование пользователя

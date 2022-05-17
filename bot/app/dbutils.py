@@ -77,3 +77,23 @@ def news_add_text(id, text):
 def news_get(id):
     news = db["news"]
     return news.find_one({"_id": id})
+
+def document_create():
+    document = db["document"]
+    id = document.insert_one({
+            "title": "",
+            "file": ""
+        }).inserted_id
+    return id
+
+def document_add_title(id, title):
+    document = db["document"]
+    document.update_one({"_id": id}, { "$set": {"title": title}})
+
+def document_add_file(id, url):
+    document = db["document"]
+    document.update_one({"_id": id}, { "$set": {"url": url}})
+
+def document_get(id):
+    document = db["document"]
+    return document.find_one({"_id": id})

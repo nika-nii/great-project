@@ -15,14 +15,14 @@
           class="col-12 col-lg-6"
           v-else
           v-for="item in news"
-          v-bind:key="item.id"
+          v-bind:key="item._id"
         >
           <div class="card card-resize my-3">
             <div class="card-body">
               <h5 class="card-title">{{ item.title }}</h5>
               <h6 class="card-subtitle mb-2 text-muted">{{ item.category }}</h6>
               <p class="card-text">{{ item.text }}</p>
-              <a href="#" class="card-link"><router-link to="/news/post" class="text-decoration-none">Продолжить чтение</router-link></a>
+              <a href="#" class="card-link"><router-link v-bind:to="'/news/' + item._id" class="text-decoration-none">Продолжить чтение</router-link></a>
             </div>
           </div>
         </div>

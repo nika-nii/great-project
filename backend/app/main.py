@@ -70,7 +70,7 @@ class Doc(BaseModel):
     id: Optional[PyObjectId] = Field(alias="_id")
     title: str
     type: str
-    file_path: str
+    url: str
     date: datetime.datetime
     author: str
     class Config:

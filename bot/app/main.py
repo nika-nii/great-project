@@ -6,6 +6,7 @@ import dbutils
 import messages
 import random
 import string
+import datetime
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -75,11 +76,15 @@ def main_menu(message):
             )
     elif message.text == "Добавить документ":
         logging.debug("Changing state to Documents")
-        dbutils.set_state(message.chat.id, "documents")
+        dbutils.set_state(message.chat.id, "documents-title")
+        logging.debug("Creating document")
+        document_id = dbutils.document_create()
+        logging.debug(f"Adding to state document id: {document_id}")
+        dbutils.set_state_document(message.chat.id, document_id)
         bot.send_message(
             message.chat.id,
-            text = messages.documents_message,
-            reply_markup = messages.documents_keyboard
+            text = messages.documents_title_message,
+            reply_markup = messages.documents_title_keyboard
             )
     elif message.text == "Добавить питание":
         logging.debug("Changing state to Meals")
@@ -168,6 +173,54 @@ def users(message):
             'title': news["title"], 
             'category': news["category"], 
             'text': news["text"]
+            }
+        )
+    if response.status_code == 200:
+        bot.send_message(message.chat.id, "Успешно отправлено!")
+    else:
+        bot.send_message(message.chat.id, "Не отправлено...")
+
+    dbutils.set_state(message.chat.id, "main-menu")
+    bot.send_message(
+        message.chat.id, 
+        text = messages.main_menu_message,
+        reply_markup = messages.main_menu_keyboard
+        )
+
+@bot.message_handler(func=lambda message: dbutils.get_state(message.chat.id) == "documents-title")
+def users(message):
+    logging.debug(f'We are in documents title menu')
+
+    title = message.text
+    dbutils.document_add_title(dbutils.get_state_document(message.chat.id), title)
+
+    dbutils.set_state(message.chat.id, "documents-file")
+    bot.send_message(
+        message.chat.id, 
+        text = messages.documents_file_message,
+        reply_markup = messages.documents_file_keyboard
+        )
+
+@bot.message_handler(func=lambda message: dbutils.get_state(message.chat.id) == "documents-file", content_types=["document"])
+def users(message):
+    logging.debug(f'We are in documents file menu')
+
+    file_id = message.document.file_id
+    file_name = message.document.file_name
+    extension = file_name.split('.')[-1]
+    url = bot.get_file_url(file_id)
+    dbutils.document_add_file(dbutils.get_state_document(message.chat.id), url)
+
+    document = dbutils.document_get(dbutils.get_state_document(message.chat.id))
+
+    response = requests.post(
+        f'{BACKEND_URL}/docs/', 
+        json={
+            'title': document["title"], 
+            'type': extension,
+            'url': document["url"],
+            'date': str(datetime.datetime.now()),
+            'author': str(message.chat.id)
             }
         )
     if response.status_code == 200:

@@ -62,7 +62,7 @@
                 </p>
                 <div class="row">
                   <div class="col-4">
-                    <a :href="doc.file_path" target="_blank" class="link-secondary">Открыть</a>
+                    <a :href="doc.url" target="_blank" class="link-secondary">Открыть</a>
                   </div>
                   <div class="col-4">
                     <p>{{ new Date(doc.date).toLocaleDateString('ru-RU') }}</p>

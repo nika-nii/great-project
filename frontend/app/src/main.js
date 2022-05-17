@@ -95,11 +95,11 @@ const router = new VueRouter({
             }
         },
         {
-            path: '/news/post',
+            path: '/news/:id',
             component: Post,
-            props: {
-                url: baseUrl + '/news/post'
-            }
+            props: route => ({
+                url: baseUrl + '/news/' + route.params.id
+            })
         }
     ]
 })
