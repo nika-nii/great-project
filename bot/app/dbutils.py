@@ -1,99 +1,81 @@
 from pymongo import MongoClient
 import logging
+from enum import Enum
 
 MONGO_HOST = "mongo"
 MONGO_PORT = 27017
 MONGO_DB = "bot"
 
+class States(Enum):
+    START="start"
+    MENU="menu"
+
+class Roles(Enum):
+    ADMIN="admin"
+    EDITOR="editor"
+
 mongo_client = MongoClient(MONGO_HOST, MONGO_PORT)
 db = mongo_client[MONGO_DB]
+states = db["states"]
+users = db["users"]
 
-def get_state(chat_id):
-    states = db["states"]
-    state = states.find_one({"chat_id": chat_id})
-    return state["state"]
+def get_state(client_id: int) -> States:
+    '''Получение текущего состояния клиента'''
+    state = states.find_one(
+        filter={"client_id": client_id}
+    )
+    return State(state["state"])
 
-def set_state(chat_id, state):
-    states = db["states"]
-    current_state = states.find_one({"chat_id": chat_id})
-    logging.debug(f"Found state: {current_state}")
-    if current_state:
-        states.update_one({"chat_id": chat_id}, { "$set": {"state": state}})
-    else:
-        states.insert_one({"chat_id": chat_id, "state": state})
+def set_state(client_id: int, state: States):
+    '''Установка состояния клиента'''
+    states.update_one(
+        filter={"client_id": client_id},
+        update={ "$set": {"state": state.value}},
+        upsert=True
+    )
 
-def set_state_document(chat_id, document_id):
-    states = db["states"]
-    states.update_one({"chat_id": chat_id}, { "$set": {"document_id": document_id}})
+def get_context(client_id: int) -> dict:
+    '''Получение контекста (контекст = редактируемый документ и т.д.)'''
+    state = states.find_one(
+        filter={"client_id": client_id}
+    )
+    return state["context"]
 
-def get_state_document(chat_id):
-    states = db["states"]
-    state = states.find_one({"chat_id": chat_id})
-    return state["document_id"]
-    
-def get_system_user(tg_user_id):
-    users = db["users"]
-    user = users.find_one({"tg_user_id": tg_user_id})
+def update_context(client_id: int, value: dict):
+    '''Обновление контекста. value - словарь с обновляемыми значениями'''
+    states.update_one(
+        filter={"client_id": client_id},
+        update={"$set": value},
+        upsert=True
+    )
+
+def get_user_by_telegram_id(telegram_id: int) -> int:
+    '''Получение системного ID пользователя по ID в телеграме'''
+    user = users.find_one(
+        filter={"telegram_id": telegram_id}
+    )
     return user
 
-def get_user_by_token(registration_token):
-    users = db["users"]
-    user = users.find_one({"registration_token": registration_token})
+def get_user_by_token(token: str) -> int:
+    '''Получение системного ID пользователя по токену приглашения'''
+    user = users.find_one(
+        filter={"token": token}
+    )
     return user
 
-def link_user_to_tg(user_id, tg_user_id):
-    users = db["users"]
-    users.update_one({"_id": user_id}, { "$set": {"tg_user_id": tg_user_id}})
+def add_telegram_id_to_user(user_id: int, telegram_id: int):
+    '''Добавить Telegram ID к ID пользователя'''
+    users.update_one(
+        filter={"user_id": user_id},
+        update={"$set": {"telegram_id": telegram_id}}
+    )
 
-def create_admin(tg_user_id):
-    users = db["users"]
-    users.insert_one({"tg_user_id": tg_user_id, "registration_token": "admin", "role": "admin"})
-
-def create_user(role, token):
-    users = db["users"]
-    users.insert_one({"role": role, "registration_token": token})
-
-def news_create():
-    news = db["news"]
-    id = news.insert_one({
-            "title": "",
-            "category": "",
-            "text": ""
-        }).inserted_id
-    return id
-
-def news_add_title(id, title):
-    news = db["news"]
-    news.update_one({"_id": id}, { "$set": {"title": title}})
-
-def news_add_category(id, category):
-    news = db["news"]
-    news.update_one({"_id": id}, { "$set": {"category": category}})
-
-def news_add_text(id, text):
-    news = db["news"]
-    news.update_one({"_id": id}, { "$set": {"text": text}})
-
-def news_get(id):
-    news = db["news"]
-    return news.find_one({"_id": id})
-
-def document_create():
-    document = db["document"]
-    id = document.insert_one({
-            "title": "",
-            "file": ""
-        }).inserted_id
-    return id
-
-def document_add_title(id, title):
-    document = db["document"]
-    document.update_one({"_id": id}, { "$set": {"title": title}})
-
-def document_add_file(id, url):
-    document = db["document"]
-    document.update_one({"_id": id}, { "$set": {"url": url}})
-
-def document_get(id):
-    document = db["document"]
-    return document.find_one({"_id": id})
+def create_user(name: str, role: Roles, token: str) -> int:
+    '''Создать пользователя в БД'''
+    return users.insert_one(
+        {
+            "name": name,
+            "role": role.value,
+            "token": token
+        }
+    ).inserted_id

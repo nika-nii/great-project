@@ -1,47 +1,56 @@
 from telebot import types
 
-# Переход в состояние Главное меню
-main_menu_message = "Главное меню"
-main_menu_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-main_menu_keyboard.add(
-    types.KeyboardButton("Добавить новость"),
-    types.KeyboardButton("Добавить документ"),
-    types.KeyboardButton("Добавить пользователя")
-)
+TRANSITIONS = {
+    "main_menu": {
+        "message": "Главное меню",
+        "keyboard": [
+            "Добавить новость",
+            "Добавить документ",
+            "Добавить пользователя"
+        ]
+    },
+    "registration": {
+        "message": "Вам необходимо зарегистрироваться. Введите код приглашения",
+        "keyboard": []
+    },
+    "users": {
+        "message": "Какие права будут выданы пользователю?",
+        "keyboard": [
+            "Администратор",
+            "Редактор"
+        ]
+    },
+    "news_title": {
+        "message": "Введите заголовок статьи",
+        "keyboard": []
+    },
+    "news_body": {
+        "message": "Введите текст статьи",
+        "keyboard": []
+    },
+    "documents_title": {
+        "message": "Введите заголовок статьи",
+        "keyboard": []
+    },
+    "documents_body": {
+        "message": "Введите текст статьи",
+        "keyboard": []
+    }
+}
 
-# Переход в состояние регистрация
-registration_message = "Вам необходимо зарегистрироваться. Введите код приглашения"
-registration_keyboard = types.ReplyKeyboardRemove()
-
-# Переход в состояние Добавление пользователя
-users_message = "Какие права будут выданы пользователю?"
-users_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-users_keyboard.add(
-    types.KeyboardButton("admin"),
-    types.KeyboardButton("editor")
-)
-
-# Переход в состояние Добавление новости
-news_title_message = "Введите заголовок статьи"
-news_title_keyboard = types.ReplyKeyboardRemove()
-
-news_category_message = "Введите категорию"
-news_category_keyboard = types.ReplyKeyboardRemove()
-
-news_text_message = "Введите текст статьи"
-news_text_keyboard = types.ReplyKeyboardRemove()
-
-# Переход в состояние Добавление документа
-documents_title_message = "Введите название документа"
-documents_title_keyboard = types.ReplyKeyboardRemove()
-
-documents_file_message = "Прикрепите файл с документом"
-documents_file_keyboard = types.ReplyKeyboardRemove()
-
-# Переход в состояние Редактирование пользователя
-users_message = "Какие права будут выданы пользователю?"
-users_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-users_keyboard.add(
-    types.KeyboardButton("admin"),
-    types.KeyboardButton("editor")
-)
+def get_response(transition):
+    value = TRANSITIONS.get(transition)
+    if not value:
+        raise ValueError("Переход в данное состояние не описан")
+    message = value["message"]
+    keyboard = None
+    if value["keyboard"]:
+        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        for k in value["keyboard"]:
+            keyboard.add(types.KeyboardButton(k))
+    else:
+        keyboard = types.ReplyKeyboardRemove()
+    return {
+        "message": message,
+        "keyboard": keyboard
+    }

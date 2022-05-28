@@ -7,6 +7,9 @@ import messages
 import random
 import string
 import datetime
+from telebot.types import Message, TeleBot
+from dbutils import States,Roles
+from messages import get_response
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -14,36 +17,57 @@ BACKEND_URL = "http://backend"
 
 bot = telebot.TeleBot(os.getenv('telegram_token'), parse_mode=None)
 
+def check_state(client_id: int, state: States) -> bool:
+    return dbutils.get_state(client_id) == state
+    
+def get_client_id(message: Message) -> int:
+    return message.chat.id
+
+def get_user_id(message: Message) -> int:
+    return dbutils.get_user_by_telegram_id(message.from_user.id)
+
+def do_transition(bot: TeleBot, message: Message, state: States):
+    logging.debug(f"Transitting to state {state}")
+    dbutils.set_state(get_client_id(message), state)
+    response = get_response(state.value)
+    bot.send_message(
+        message.chat.id,
+        text=response.message,
+        reply_markup=response.keyboard
+    )
+
 @bot.message_handler(commands=['start'])
 def user_login(message):
-    logging.debug('Started user login')
-    user = dbutils.get_system_user(message.from_user.id)
-    if user:
-        logging.debug(f'Found user: id={user["_id"]}')
-        logging.debug("Changing state to Main menu")
-        dbutils.set_state(message.chat.id, "main-menu")
-        
-        bot.send_message(
-            message.chat.id, 
-            text = messages.main_menu_message,
-            reply_markup = messages.main_menu_keyboard
-            )
-
+    '''Состояние "пользователь только что запустил бота"'''
+    logging.debug('State: User Login')
+    user_id = get_user_id(message)
+    if user_id:
+        logging.debug(f'User exists: id={user_id}')
+        do_transition(bot, message, States.MENU)
     else:
-        logging.debug(f'Changing state to Registration')
-        dbutils.set_state(message.chat.id, "registration")
-        bot.send_message(
-            message.chat.id,
-            text = messages.registration_message,
-            reply_markup = messages.registration_keyboard
-            )
+        do_transition(bot, message, States.REGISTRATION)
 
-@bot.message_handler(func=lambda message: dbutils.get_state(message.chat.id) == "registration")
+@bot.message_handler(commands=['godmode'])
+def godmode(message):
+    '''Вызвавший функцию пользователь станет администратором'''
+    logging.debug(f'Adding admin user with telegram id {message.from_user.id}')
+    user_id = dbutils.create_user("admin", Roles.ADMIN, generate_token())
+    dbutils.add_telegram_id_to_user(user_id, message.from_user.id)
+    logging.debug(f'Admin created with id={user_id}')
+    do_transition(bot, message, States.MENU)
+
+@bot.message_handler(func=check_state(get_client_id(message), States.REGISTRATION))
 def register_user(message):
     token = message.text
     logging.debug(f'Got token {token}')
-    user = dbutils.get_user_by_token(token)
-    logging.debug(f'Found user: {user}')
+    user_id = dbutils.get_user_by_token(token)
+    if not user_id:
+        bot.send_message(
+            message.chat.id,
+            "Неверный токен! Проверьте правильность и введите заново"
+        )
+        return
+    logging.debug(f'Found user with id: {user_id}')
     if user:
         dbutils.link_user_to_tg(user["_id"], message.from_user.id)
         dbutils.set_state(message.chat.id, "main-menu")
@@ -235,9 +259,9 @@ def users(message):
         reply_markup = messages.main_menu_keyboard
         )
 
-def generate_random_string(length):
+def generate_token():
     letters = string.ascii_lowercase
-    rand_string = ''.join(random.choice(letters) for i in range(length))
+    rand_string = ''.join(random.choice(letters) for i in range(8))
     return rand_string
 
 bot.infinity_polling()
