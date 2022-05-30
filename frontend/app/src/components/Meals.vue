@@ -7,9 +7,7 @@
           <nav aria-label="breadcrumb">
             <ol class="breadcrumb mt-3">
               <li class="breadcrumb-item">
-                <a href="#" class="link-secondary text-decoration-none"
-                  ><font-awesome-icon :icon="['fas', 'home']" />&nbsp;</a
-                >
+                <router-link to="/page" class="text-dark text-decoration-none"><font-awesome-icon :icon="['fas', 'home']" />&nbsp;</router-link>
               </li>
               <li class="breadcrumb-item active" aria-current="page">
                 Питание
@@ -132,8 +130,10 @@
         </table>
       </div>
     </div>
-    <my-org-webs></my-org-webs>
-    <my-footer></my-footer>
+    <div class="mine-footer">
+      <my-org-webs></my-org-webs>
+      <my-footer></my-footer>
+    </div>
   </body>
 </template>
 

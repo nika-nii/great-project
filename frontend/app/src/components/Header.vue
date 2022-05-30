@@ -25,9 +25,12 @@
                   Главная</router-link>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="#">Новости</a>
+                <router-link to="/docs" class="nav-link active" aria-current="page">
+                  Документы</router-link>
               </li>
               <li class="nav-item">
+                <router-link to="/meals" class="nav-link active" aria-current="page">
+                  Питание</router-link>
               </li>
               <li class="nav-item dropdown">
                 <a
@@ -36,11 +39,11 @@
                   id="dropdown04"
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
-                  >Меню</a
+                  >Общая информация</a
                 >
                 <ul class="dropdown-menu" aria-labelledby="dropdown04">
-                  <li><router-link class="dropdown-item" to="/docs">Документы</router-link></li>
-                  <li><router-link class="dropdown-item" to="/meals">Питание</router-link></li>
+                  <li><router-link class="dropdown-item" to="/about">Сведения о лицее</router-link></li>
+                  <li><router-link class="dropdown-item" to="/rules">Правила приема</router-link></li>
                 </ul>
               </li>
             </ul>
@@ -65,5 +68,5 @@
 </script>
 
 <style>
-
+@import "./style.css";
 </style>
