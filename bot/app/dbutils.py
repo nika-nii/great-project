@@ -9,6 +9,14 @@ MONGO_DB = "bot"
 class States(Enum):
     START="start"
     MENU="menu"
+    REGISTRATION="registration"
+    USER_ADD="user_add"
+    USER_NAME="user_name"
+    NEWS_ADD="news_add"
+    NEWS_BODY="news_body"
+    DOCUMENT_ADD="document_add"
+    MEALS_ADD="meals_add"
+
 
 class Roles(Enum):
     ADMIN="admin"
@@ -68,6 +76,13 @@ def add_telegram_id_to_user(user_id: int, telegram_id: int):
     users.update_one(
         filter={"user_id": user_id},
         update={"$set": {"telegram_id": telegram_id}}
+    )
+
+def set_user_role(user_id: int, role: Roles):
+    '''Установить роль для пользователя'''
+    users.update_one(
+        filter={"user_id": user_id},
+        update={"$set": {"role": role.value}}
     )
 
 def create_user(name: str, role: Roles, token: str) -> int:

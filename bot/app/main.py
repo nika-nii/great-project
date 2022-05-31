@@ -51,13 +51,19 @@ def user_login(message):
 def godmode(message):
     '''Вызвавший функцию пользователь станет администратором'''
     logging.debug(f'Adding admin user with telegram id {message.from_user.id}')
-    user_id = dbutils.create_user("admin", Roles.ADMIN, generate_token())
-    dbutils.add_telegram_id_to_user(user_id, message.from_user.id)
-    logging.debug(f'Admin created with id={user_id}')
+    user_id = get_user_id(message)
+    if user_id:
+        logging.debug(f'User exists: id={user_id}. Setting admin role')
+        dbutils.set_user_role(user_id, Roles.ADMIN)
+    else:
+        user_id = dbutils.create_user("admin", Roles.ADMIN, generate_token())
+        dbutils.add_telegram_id_to_user(user_id, message.from_user.id)
+        logging.debug(f'Admin created with id={user_id}')
     do_transition(bot, message, States.MENU)
 
 @bot.message_handler(func=check_state(get_client_id(message), States.REGISTRATION))
 def register_user(message):
+    '''Состояние "регистрация пользователя по коду приглашения"'''
     token = message.text
     logging.debug(f'Got token {token}')
     user_id = dbutils.get_user_by_token(token)
@@ -67,92 +73,86 @@ def register_user(message):
             "Неверный токен! Проверьте правильность и введите заново"
         )
         return
-    logging.debug(f'Found user with id: {user_id}')
-    if user:
-        dbutils.link_user_to_tg(user["_id"], message.from_user.id)
-        dbutils.set_state(message.chat.id, "main-menu")
-
-        bot.send_message(
-            message.chat.id, 
-            text = messages.main_menu_message,
-            reply_markup = messages.main_menu_keyboard
-            )
-
     else:
-        if message.text == "admin":
-            dbutils.create_admin(message.from_user.id)
-        bot.send_message(message.chat.id, "Пользователя с таким кодом приглашения не существует")
+        logging.debug(f'Found user with id: {user_id}')
+        dbutils.add_telegram_id_to_user(user_id, message.from_user.id)
+        do_transition(bot, message, States.MENU)
 
-@bot.message_handler(func=lambda message: dbutils.get_state(message.chat.id) == "main-menu")
-def main_menu(message):
-    logging.debug(f'We are in main menu')
-    if message.text == "Добавить новость":
-        logging.debug("Changing state to News-title")
-        dbutils.set_state(message.chat.id, "news-title")
-        logging.debug("Creating news document")
-        news_id = dbutils.news_create()
-        logging.debug(f"Adding to state document id: {news_id}")
-        dbutils.set_state_document(message.chat.id, news_id)
-        bot.send_message(
-            message.chat.id,
-            text = messages.news_title_message,
-            reply_markup = messages.news_title_keyboard
-            )
-    elif message.text == "Добавить документ":
-        logging.debug("Changing state to Documents")
-        dbutils.set_state(message.chat.id, "documents-title")
-        logging.debug("Creating document")
-        document_id = dbutils.document_create()
-        logging.debug(f"Adding to state document id: {document_id}")
-        dbutils.set_state_document(message.chat.id, document_id)
-        bot.send_message(
-            message.chat.id,
-            text = messages.documents_title_message,
-            reply_markup = messages.documents_title_keyboard
-            )
+@bot.message_handler(func=check_state(get_client_id(message), States.MENU))
+def menu(message):
+    logging.debug("State: main menu")
+    choice = message.text
+    if choice == "Добавить новость":
+        do_transition(bot, message, States.NEWS_ADD)
+    elif choice == "Добавить документ":
+        do_transition(bot, message, States.DOCUMENT_ADD)
     elif message.text == "Добавить питание":
-        logging.debug("Changing state to Meals")
-        dbutils.set_state(message.chat.id, "meals")
-        bot.send_message(
-            message.chat.id,
-            text = messages.meals_message,
-            reply_markup = messages.meals_keyboard
-            )
+        do_transition(bot, message, States.MEALS_ADD)
     elif message.text == "Добавить пользователя":
-        logging.debug("Changing state to Users")
-        dbutils.set_state(message.chat.id, "users")
-        bot.send_message(
-            message.chat.id,
-            text = messages.users_message,
-            reply_markup = messages.users_keyboard
-            )
+        user = get_user_id(message)
+        if user["role"] == Roles.ADMIN.value:
+            do_transition(bot, message, States.USER_ADD)
+        else:
+            bot.send_message(message.chat.id, "Извините, но у вас нет прав на это действие")
     else:
         bot.send_message(
             message.chat.id, 
-            text = messages.main_menu_message,
+            text = 'Пожалуйста, выберите категорию из предложенных',
             reply_markup = messages.main_menu_keyboard
-            )
-
-@bot.message_handler(func=lambda message: dbutils.get_state(message.chat.id) == "users")
-def users(message):
-    logging.debug(f'We are in users menu')
-    user = dbutils.get_system_user(message.from_user.id)
-    if user["role"] != "admin":
-        bot.send_message(message.chat.id, "Извините, но у вас нет прав на это действие")
-    else:
-        role = message.text
-        token = generate_random_string(8)
-        dbutils.create_user(role, token)
-        bot.send_message(
-            message.chat.id,
-            text = f"Создан пользователь с ролью {role} и кодом регистрации {token}"
-            )
-    dbutils.set_state(message.chat.id, "main-menu")
-    bot.send_message(
-        message.chat.id, 
-        text = messages.main_menu_message,
-        reply_markup = messages.main_menu_keyboard
         )
+
+@bot.message_handler(func=check_state(get_client_id(message), States.USER_ADD))
+def user_add(message):
+    logging.debug("State: user add")
+    role = message.text
+    dbutils.update_context(get_client_id(message), {"user_role": role})
+    do_transition(bot, message, States.USER_NAME)
+    
+@bot.message_handler(func=check_state(get_client_id(message), States.USER_NAME))
+def user_name(message):
+    logging.debug("State: user name")
+    name = message.text
+    token = generate_random_string(8)
+    role = dbutils.get_context(get_client_id(message))["user_role"]
+    dbutils.create_user(name, role, token)
+    dbutils.update_context(get_client_id(message), {"user_role": ""})
+    bot.send_message(
+        message.chat.id,
+        text = f"Создан пользователь с ролью {role} и кодом регистрации {token}"
+    )
+    do_transition(bot, message, States.MENU)
+
+@bot.message_handler(func=check_state(get_client_id(message), States.NEWS_ADD))
+def news_add(message):
+    logging.debug("State: news add")
+    title = message.text
+    dbutils.update_context(get_client_id(message), {"news_title": title})
+    do_transition(bot, message, States.NEWS_BODY)
+    
+@bot.message_handler(func=check_state(get_client_id(message), States.NEWS_BODY))
+def news_body(message):
+    logging.debug("State: news body")
+    # TODO: получить от пользователя прикрепленную картинку, сохранить ее к себе
+    if message.text:
+        logging.debug(f"Message contains text: {message.text}")
+        text = message.text
+        old_text = dbutils.get_context(get_client_id(message))["news_text"]
+        dbutils.update_context(client_id, {"news_text": old_text + text})
+    elif message.photo:
+        logging.debug(f"Message contains photos: {len(message.photo)} files")
+        photo = [photo.file_id for photo in message.photo]
+        # TODO: key get from dict
+        old_photo = dbutils.get_context(get_client_id(message))["news_photo"]
+        dbutils.update_context(client_id, {"news_photo": old_photo + photo})
+    text = message.text
+    token = generate_random_string(8)
+    role = dbutils.get_context(get_client_id(message))["user_role"]
+    dbutils.create_user(name, role, token)
+    bot.send_message(
+        message.chat.id,
+        text = f"Создан пользователь с ролью {role} и кодом регистрации {token}"
+    )
+    do_transition(bot, message, States.MENU)
 
 @bot.message_handler(func=lambda message: dbutils.get_state(message.chat.id) == "news-title")
 def users(message):

@@ -1,7 +1,7 @@
 from telebot import types
 
 TRANSITIONS = {
-    "main_menu": {
+    "menu": {
         "message": "Главное меню",
         "keyboard": [
             "Добавить новость",
@@ -13,27 +13,39 @@ TRANSITIONS = {
         "message": "Вам необходимо зарегистрироваться. Введите код приглашения",
         "keyboard": []
     },
-    "users": {
+    "user_add": {
         "message": "Какие права будут выданы пользователю?",
         "keyboard": [
             "Администратор",
             "Редактор"
         ]
     },
-    "news_title": {
+    "user_name": {
+        "message": "Укажите имя пользователя",
+        "keyboard": []
+    },
+    "news_add": {
         "message": "Введите заголовок статьи",
+        "keyboard": []
+    },
+    "news_body": {
+        "message": "Добавляйте текст и изображения в одном или нескольких сообщениях. Для окончания редактирования введите слово 'конец'",
         "keyboard": []
     },
     "news_body": {
         "message": "Введите текст статьи",
         "keyboard": []
     },
-    "documents_title": {
+    "documents_add": {
         "message": "Введите заголовок статьи",
         "keyboard": []
     },
     "documents_body": {
         "message": "Введите текст статьи",
+        "keyboard": []
+    },
+    "meals_add": {
+        "message": "Введите название меню",
         "keyboard": []
     }
 }
