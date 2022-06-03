@@ -1,4 +1,4 @@
-from telebot import types
+from telebot.types import ReplyKeyboardMarkup, ReplyKeyboardRemove, KeyboardButton
 
 TRANSITIONS = {
     "menu": {
@@ -28,20 +28,20 @@ TRANSITIONS = {
         "message": "Введите заголовок статьи",
         "keyboard": []
     },
+    "news_category": {
+        "message": "Укажите категорию статьи",
+        "keyboard": []
+    },
     "news_body": {
         "message": "Добавляйте текст и изображения в одном или нескольких сообщениях. Для окончания редактирования введите слово 'конец'",
         "keyboard": []
     },
-    "news_body": {
-        "message": "Введите текст статьи",
+    "document_add": {
+        "message": "Введите название документа",
         "keyboard": []
     },
-    "documents_add": {
-        "message": "Введите заголовок статьи",
-        "keyboard": []
-    },
-    "documents_body": {
-        "message": "Введите текст статьи",
+    "document_body": {
+        "message": "Прикрепите файл",
         "keyboard": []
     },
     "meals_add": {
@@ -57,11 +57,11 @@ def get_response(transition):
     message = value["message"]
     keyboard = None
     if value["keyboard"]:
-        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
         for k in value["keyboard"]:
-            keyboard.add(types.KeyboardButton(k))
+            keyboard.add(KeyboardButton(k))
     else:
-        keyboard = types.ReplyKeyboardRemove()
+        keyboard = ReplyKeyboardRemove()
     return {
         "message": message,
         "keyboard": keyboard

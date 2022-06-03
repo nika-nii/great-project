@@ -13,14 +13,16 @@ class States(Enum):
     USER_ADD="user_add"
     USER_NAME="user_name"
     NEWS_ADD="news_add"
+    NEWS_CATEGORY="news_category"
     NEWS_BODY="news_body"
     DOCUMENT_ADD="document_add"
+    DOCUMENT_BODY="document_body"
     MEALS_ADD="meals_add"
 
 
 class Roles(Enum):
-    ADMIN="admin"
-    EDITOR="editor"
+    ADMIN="Администратор"
+    EDITOR="Редактор"
 
 mongo_client = MongoClient(MONGO_HOST, MONGO_PORT)
 db = mongo_client[MONGO_DB]
@@ -32,7 +34,7 @@ def get_state(client_id: int) -> States:
     state = states.find_one(
         filter={"client_id": client_id}
     )
-    return State(state["state"])
+    return States(state.get("state", States.START.value))
 
 def set_state(client_id: int, state: States):
     '''Установка состояния клиента'''
@@ -47,13 +49,15 @@ def get_context(client_id: int) -> dict:
     state = states.find_one(
         filter={"client_id": client_id}
     )
-    return state["context"]
+    return state.get("context", {})
 
 def update_context(client_id: int, value: dict):
     '''Обновление контекста. value - словарь с обновляемыми значениями'''
+    old_context = get_context(client_id)
+    new_context = old_context | value
     states.update_one(
         filter={"client_id": client_id},
-        update={"$set": value},
+        update={"$set": {"context": new_context}},
         upsert=True
     )
 
@@ -62,7 +66,7 @@ def get_user_by_telegram_id(telegram_id: int) -> int:
     user = users.find_one(
         filter={"telegram_id": telegram_id}
     )
-    return user
+    return user["_id"]
 
 def get_user_by_token(token: str) -> int:
     '''Получение системного ID пользователя по токену приглашения'''
@@ -74,14 +78,28 @@ def get_user_by_token(token: str) -> int:
 def add_telegram_id_to_user(user_id: int, telegram_id: int):
     '''Добавить Telegram ID к ID пользователя'''
     users.update_one(
-        filter={"user_id": user_id},
+        filter={"_id": user_id},
         update={"$set": {"telegram_id": telegram_id}}
     )
+
+def get_user_name(user_id: int) -> str:
+    '''Получить имя системного пользователя'''
+    user = users.find_one(
+        filter={"_id": user_id}
+    )
+    return user.get("name", "Без имени")
+
+def get_user_role(user_id: int) -> Roles:
+    '''Получить роль системного пользователя'''
+    user = users.find_one(
+        filter={"_id": user_id}
+    )
+    return Roles(user.get("role", Roles.EDITOR.value))
 
 def set_user_role(user_id: int, role: Roles):
     '''Установить роль для пользователя'''
     users.update_one(
-        filter={"user_id": user_id},
+        filter={"_id": user_id},
         update={"$set": {"role": role.value}}
     )
 
