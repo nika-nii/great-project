@@ -1,11 +1,13 @@
 from typing import List, Optional, Union
 from pydantic.typing import NoneType
 from pymongo import MongoClient
-from fastapi import FastAPI
+from fastapi import FastAPI, File, UploadFile
 from pydantic import BaseModel, Field
 from bson import ObjectId
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+import uuid
+import pathlib
 import datetime
 
 DB = "course"
@@ -16,7 +18,7 @@ MEALS_COLLECTION = "meals"
 MONGO_HOST = "mongo"
 MONGO_PORT = 27017
 
-mongo_client = MongoClient(MONGO_HOST, MONGO_PORT)
+mongo_client = MongoClient("mongodb://localhost:27017/?readPreference=primary&directConnection=true&ssl=false")
 
 app = FastAPI()
 
@@ -111,6 +113,16 @@ class Meal(BaseModel):
         json_encoders = {
             ObjectId: str
         }
+
+@app.post("/upload/")
+async def upload_file(file: UploadFile = File(...)):
+    file_name_uuid = uuid.uuid4()
+    file_name = str(file_name_uuid)
+    file_content = await file.read()  # получаем содержимое файла
+    extension = pathlib.Path(file.filename).suffix
+    with open(f"static/{file_name}{extension}", "wb") as new_file:
+        new_file.write(file_content)
+        return {"filename": new_file.name}
 
 @app.post("/news/")
 async def create_post(post_in: Post):

@@ -149,8 +149,10 @@
         </div>
       </div>
     </div>
-    <my-org-webs></my-org-webs>
-    <my-footer></my-footer>
+    <div class="mine-footer">
+      <my-org-webs></my-org-webs>
+      <my-footer></my-footer>
+    </div>
   </body>
 </template>
 
