@@ -66,14 +66,20 @@ def get_user_by_telegram_id(telegram_id: int) -> int:
     user = users.find_one(
         filter={"telegram_id": telegram_id}
     )
-    return user["_id"]
+    if user:
+        return user["_id"]
+    else:
+        return None
 
 def get_user_by_token(token: str) -> int:
     '''Получение системного ID пользователя по токену приглашения'''
     user = users.find_one(
         filter={"token": token}
     )
-    return user["_id"]
+    if user:
+        return user["_id"]
+    else:
+        return None
 
 def add_telegram_id_to_user(user_id: int, telegram_id: int):
     '''Добавить Telegram ID к ID пользователя'''
