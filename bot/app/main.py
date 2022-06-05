@@ -10,6 +10,7 @@ from telebot import TeleBot
 from telebot.types import Message
 from dbutils import States, Roles
 from messages import get_response
+from io import BytesIO
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -234,6 +235,56 @@ def document_body(message):
         dbutils.update_context(client_id, {"document_title": ""})
     else:
         bot.send_message(message.chat.id, "Не отправлено...")
+    do_transition(bot, message, States.MENU)
+
+@bot.message_handler(
+    func=lambda message: check_state(get_client_id(message), States.MEALS_ADD),
+    content_types=["text", "document"]
+    )
+def meals_add(message):
+    logging.debug("State: meals add")
+    client_id = get_client_id(message)
+    if message.text and message.text == "Загрузить шаблон":
+        with open("templates/template_menu.xlsx", "rb") as template_menu:
+            file_object = BytesIO(template_menu.read())
+            file_object.name = "Шаблон меню питания.xlsx"
+            bot.send_document(message.from_user.id, data=file_object, caption="Шаблон меню питания")
+    elif message.document:
+        file_id = message.document.file_id
+        file_name = message.document.file_name
+        extension = file_name.split('.')[-1]
+        url = bot.get_file_url(file_id)
+        #TODO: загрузить таблицу и обработать
+        response = requests.post(
+            f"{BACKEND_URL}/meals/",
+            json={
+                "date": str(datetime.datetime.now()),
+                "breakfast": {
+                    "hot_meal": "string",
+                    "hot_drink": "string",
+                    "fruit": "string",
+                    "milk": "string",
+                    "bakery": "string"
+                },
+                "second_breakfast": {
+                    "hot_drink": "string",
+                    "snack": "string"
+                },
+                "dinner": {
+                    "hot_meal_first": "string",
+                    "hot_meal_second": "string",
+                    "garnish": "string",
+                    "drink": "string",
+                    "bread_white": "string",
+                    "bread_black": "string",
+                    "snack": "string"
+                }
+            },
+        )
+        if response.status_code == 200:
+            bot.send_message(message.chat.id, "Успешно отправлено!")
+        else:
+            bot.send_message(message.chat.id, "Не отправлено...")
     do_transition(bot, message, States.MENU)
 
 def generate_token():
