@@ -100,6 +100,10 @@ def menu(message):
         do_transition(bot, message, States.DOCUMENT_ADD)
     elif message.text == "Добавить питание":
         do_transition(bot, message, States.MEALS_ADD)
+    elif message.text == "Показать новости":
+        show_news(message)
+    elif message.text == "Показать документы":
+        show_docs(message)
     elif message.text == "Добавить пользователя":
         user_id = get_user_id(message)
         if dbutils.get_user_role(user_id) == Roles.ADMIN:
