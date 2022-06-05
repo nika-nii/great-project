@@ -7,7 +7,7 @@ import random
 import string
 import datetime
 from telebot import TeleBot
-from telebot.types import Message
+from telebot.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from dbutils import States, Roles
 from messages import get_response
 from io import BytesIO
@@ -69,7 +69,9 @@ def godmode(message):
     do_transition(bot, message, States.MENU)
 
 
-@bot.message_handler(func=lambda message: check_state(get_client_id(message), States.REGISTRATION))
+@bot.message_handler(
+    func=lambda message: check_state(get_client_id(message), States.REGISTRATION)
+)
 def register_user(message):
     '''Состояние "регистрация пользователя по коду приглашения"'''
     token = message.text
@@ -86,7 +88,9 @@ def register_user(message):
         do_transition(bot, message, States.MENU)
 
 
-@bot.message_handler(func=lambda message: check_state(get_client_id(message), States.MENU))
+@bot.message_handler(
+    func=lambda message: check_state(get_client_id(message), States.MENU)
+)
 def menu(message):
     logging.debug("State: main menu")
     choice = message.text
@@ -111,7 +115,50 @@ def menu(message):
             reply_markup=messages.main_menu_keyboard,
         )
 
-@bot.message_handler(func=lambda message: check_state(get_client_id(message), States.USER_ADD))
+
+def show_news(message):
+    logging.debug("Get and show news list")
+    response = requests.get(f"{BACKEND_URL}/news/")
+    if response.status_code == 200:
+        news_list = response.json()
+        for news in news_list:
+            markup = InlineKeyboardMarkup()
+            edit_button = InlineKeyboardButton(text="Редактировать", callback_data=f"edit news {news._id}")
+            delete_button = InlineKeyboardButton(text="Удалить", callback_data = f"delete news {news._id}")
+            markup.add(edit_button, delete_button)
+            bot.send_message(
+                message.chat.id,
+                text=f'{news.title}',
+                reply_markup=markup
+                )
+
+def show_docs(message):
+    logging.debug("Get and show docs list")
+    response = requests.get(f"{BACKEND_URL}/docs/")
+    if response.status_code == 200:
+        doc_list = response.json()
+        for doc in doc_list:
+            markup = InlineKeyboardMarkup()
+            edit_button = InlineKeyboardButton(text="Редактировать", callback_data=f"edit doc {doc._id}")
+            delete_button = InlineKeyboardButton(text="Удалить", callback_data = f"delete doc {doc._id}")
+            markup.add(edit_button, delete_button)
+            bot.send_message(
+                message.chat.id,
+                text=f'{doc.title}',
+                reply_markup=markup
+                )
+
+@bot.callback_query_handler(func=lambda call: True)
+def callback_inline(call):
+    if call.message:
+        logging.debug(f"Callback handler: {call.data}")
+        action, entity, id = call.data.split(' ')
+        logging.debug(f"Do action {action} with {entity} id {id}")
+        # TODO: действие
+
+@bot.message_handler(
+    func=lambda message: check_state(get_client_id(message), States.USER_ADD)
+)
 def user_add(message):
     logging.debug("State: user add")
     role = message.text
@@ -119,7 +166,9 @@ def user_add(message):
     do_transition(bot, message, States.USER_NAME)
 
 
-@bot.message_handler(func=lambda message: check_state(get_client_id(message), States.USER_NAME))
+@bot.message_handler(
+    func=lambda message: check_state(get_client_id(message), States.USER_NAME)
+)
 def user_name(message):
     logging.debug("State: user name")
     name = message.text
@@ -134,24 +183,30 @@ def user_name(message):
     do_transition(bot, message, States.MENU)
 
 
-@bot.message_handler(func=lambda message: check_state(get_client_id(message), States.NEWS_ADD))
+@bot.message_handler(
+    func=lambda message: check_state(get_client_id(message), States.NEWS_ADD)
+)
 def news_add(message):
     logging.debug("State: news add")
     title = message.text
     dbutils.update_context(get_client_id(message), {"news_title": title})
     do_transition(bot, message, States.NEWS_CATEGORY)
 
-@bot.message_handler(func=lambda message: check_state(get_client_id(message), States.NEWS_CATEGORY))
+
+@bot.message_handler(
+    func=lambda message: check_state(get_client_id(message), States.NEWS_CATEGORY)
+)
 def news_category(message):
     logging.debug("State: news category")
     title = message.text
     dbutils.update_context(get_client_id(message), {"news_category": title})
     do_transition(bot, message, States.NEWS_BODY)
 
+
 @bot.message_handler(
     func=lambda message: check_state(get_client_id(message), States.NEWS_BODY),
-    content_types=["text", "photo"]
-    )
+    content_types=["text", "photo"],
+)
 def news_body(message):
     logging.debug("State: news body")
     client_id = get_client_id(message)
@@ -160,29 +215,39 @@ def news_body(message):
         logging.debug(f"Message contains text: {message.text}")
         text = message.text
 
-        # Если пользователь закончил редактирование сообщения и хочет его сохранить, 
+        # Если пользователь закончил редактирование сообщения и хочет его сохранить,
         # сохранем и возвращаем его в главное меню.
         if text.lower() in FINISH_PHRASES:
-            logging.debug(f"We have a message with text {context.get('news_text')} and photos {context.get('news_photo')}")
+            logging.debug(
+                f"We have a message with text {context.get('news_text')} and photos {context.get('news_photo')}"
+            )
             title = context.get("news_title", "Нет заголовка")
             text = context.get("news_text", "")
             category = context.get("news_category", "")
             photo_array = context.get("news_photo", [])
             for photo in photo_array:
                 bot.get_file_url(photo)
-            #TODO: аплоад фотографий
+            # TODO: аплоад фотографий
             response = requests.post(
                 f"{BACKEND_URL}/news/",
                 json={
                     "title": title,
                     "category": category,
                     "text": text,
-                }
+                },
             )
             if response.status_code == 200:
                 bot.send_message(message.chat.id, "Успешно отправлено!")
                 # Очистка контекста - чтобы в следующий раз новость начиналась с нуля
-                dbutils.update_context(client_id, {"news_title": "", "news_category": "", "news_text": "", "news_photo": []})
+                dbutils.update_context(
+                    client_id,
+                    {
+                        "news_title": "",
+                        "news_category": "",
+                        "news_text": "",
+                        "news_photo": [],
+                    },
+                )
             else:
                 bot.send_message(message.chat.id, "Не отправлено...")
             do_transition(bot, message, States.MENU)
@@ -198,7 +263,9 @@ def news_body(message):
         dbutils.update_context(client_id, {"news_photo": old_photo + photo})
 
 
-@bot.message_handler(func=lambda message: check_state(get_client_id(message), States.DOCUMENT_ADD))
+@bot.message_handler(
+    func=lambda message: check_state(get_client_id(message), States.DOCUMENT_ADD)
+)
 def document_add(message):
     logging.debug("State: document add")
     title = message.text
@@ -208,18 +275,18 @@ def document_add(message):
 
 @bot.message_handler(
     func=lambda message: check_state(get_client_id(message), States.DOCUMENT_BODY),
-    content_types=["document"]
-    )
+    content_types=["document"],
+)
 def document_body(message):
     logging.debug("State: document body")
     client_id = get_client_id(message)
     context = dbutils.get_context(client_id)
-    title = context.get("document_title", "Нет заголовка") 
+    title = context.get("document_title", "Нет заголовка")
     file_id = message.document.file_id
     file_name = message.document.file_name
-    extension = file_name.split('.')[-1]
+    extension = file_name.split(".")[-1]
     url = bot.get_file_url(file_id)
-    #TODO: аплоад документа
+    # TODO: аплоад документа
     response = requests.post(
         f"{BACKEND_URL}/docs/",
         json={
@@ -227,7 +294,7 @@ def document_body(message):
             "type": extension,
             "url": url,
             "date": str(datetime.datetime.now()),
-            "author": dbutils.get_user_name(get_user_id(message))
+            "author": dbutils.get_user_name(get_user_id(message)),
         },
     )
     if response.status_code == 200:
@@ -237,10 +304,11 @@ def document_body(message):
         bot.send_message(message.chat.id, "Не отправлено...")
     do_transition(bot, message, States.MENU)
 
+
 @bot.message_handler(
     func=lambda message: check_state(get_client_id(message), States.MEALS_ADD),
-    content_types=["text", "document"]
-    )
+    content_types=["text", "document"],
+)
 def meals_add(message):
     logging.debug("State: meals add")
     client_id = get_client_id(message)
@@ -248,13 +316,15 @@ def meals_add(message):
         with open("templates/template_menu.xlsx", "rb") as template_menu:
             file_object = BytesIO(template_menu.read())
             file_object.name = "Шаблон меню питания.xlsx"
-            bot.send_document(message.from_user.id, data=file_object, caption="Шаблон меню питания")
+            bot.send_document(
+                message.from_user.id, data=file_object, caption="Шаблон меню питания"
+            )
     elif message.document:
         file_id = message.document.file_id
         file_name = message.document.file_name
-        extension = file_name.split('.')[-1]
+        extension = file_name.split(".")[-1]
         url = bot.get_file_url(file_id)
-        #TODO: загрузить таблицу и обработать
+        # TODO: загрузить таблицу и обработать
         response = requests.post(
             f"{BACKEND_URL}/meals/",
             json={
@@ -264,12 +334,9 @@ def meals_add(message):
                     "hot_drink": "string",
                     "fruit": "string",
                     "milk": "string",
-                    "bakery": "string"
+                    "bakery": "string",
                 },
-                "second_breakfast": {
-                    "hot_drink": "string",
-                    "snack": "string"
-                },
+                "second_breakfast": {"hot_drink": "string", "snack": "string"},
                 "dinner": {
                     "hot_meal_first": "string",
                     "hot_meal_second": "string",
@@ -277,8 +344,8 @@ def meals_add(message):
                     "drink": "string",
                     "bread_white": "string",
                     "bread_black": "string",
-                    "snack": "string"
-                }
+                    "snack": "string",
+                },
             },
         )
         if response.status_code == 200:
@@ -286,6 +353,7 @@ def meals_add(message):
         else:
             bot.send_message(message.chat.id, "Не отправлено...")
     do_transition(bot, message, States.MENU)
+
 
 def generate_token():
     letters = string.ascii_lowercase

@@ -18,7 +18,7 @@ MEALS_COLLECTION = "meals"
 MONGO_HOST = "mongo"
 MONGO_PORT = 27017
 
-mongo_client = MongoClient("mongodb://localhost:27017/?readPreference=primary&directConnection=true&ssl=false")
+mongo_client = MongoClient("mongodb://mongo:27017/?readPreference=primary&directConnection=true&ssl=false")
 
 app = FastAPI()
 
