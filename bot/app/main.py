@@ -158,12 +158,15 @@ def callback_inline(call):
         logging.debug(f"Callback handler: {call.data}")
         action, entity, id = call.data.split(' ')
         logging.debug(f"Do action {action} with {entity} id {id}")
-        client_id = get_client_id(call.message)
-        dbutils.update_context(client_id, {"edited_id": id})
-        if entity == "doc":
-            do_transition(bot, message, States.DOCUMENT_BODY)
-        elif entity == "news":
-            do_transition(bot, message, States.NEWS_BODY)
+        if action == "delete":
+            requests.delete(f"{BACKEND_URL}/{entity}/{id}")
+        elif action == "edit":
+            client_id = get_client_id(call.message)
+            dbutils.update_context(client_id, {"edited_id": id})
+            if entity == "doc":
+                do_transition(bot, message, States.DOCUMENT_BODY)
+            elif entity == "news":
+                do_transition(bot, message, States.NEWS_BODY)
 
 @bot.message_handler(
     func=lambda message: check_state(get_client_id(message), States.USER_ADD)
