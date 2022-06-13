@@ -158,7 +158,12 @@ def callback_inline(call):
         logging.debug(f"Callback handler: {call.data}")
         action, entity, id = call.data.split(' ')
         logging.debug(f"Do action {action} with {entity} id {id}")
-        # TODO: действие
+        client_id = get_client_id(call.message)
+        dbutils.update_context(client_id, {"edited_id": id})
+        if entity == "doc":
+            do_transition(bot, message, States.DOCUMENT_BODY)
+        elif entity == "news":
+            do_transition(bot, message, States.NEWS_BODY)
 
 @bot.message_handler(
     func=lambda message: check_state(get_client_id(message), States.USER_ADD)
@@ -232,14 +237,25 @@ def news_body(message):
             for photo in photo_array:
                 bot.get_file_url(photo)
             # TODO: аплоад фотографий
-            response = requests.post(
-                f"{BACKEND_URL}/news/",
-                json={
-                    "title": title,
-                    "category": category,
-                    "text": text,
-                },
-            )
+            edited_id = context.get("edited_id")
+            if edited_id:
+                response = requests.put(
+                    f"{BACKEND_URL}/news/{edited_id}",
+                    json={
+                        "title": title,
+                        "category": category,
+                        "text": text,
+                    },
+                )
+            else:
+                response = requests.post(
+                    f"{BACKEND_URL}/news/",
+                    json={
+                        "title": title,
+                        "category": category,
+                        "text": text,
+                    },
+                )
             if response.status_code == 200:
                 bot.send_message(message.chat.id, "Успешно отправлено!")
                 # Очистка контекста - чтобы в следующий раз новость начиналась с нуля
@@ -291,16 +307,29 @@ def document_body(message):
     extension = file_name.split(".")[-1]
     url = bot.get_file_url(file_id)
     # TODO: аплоад документа
-    response = requests.post(
-        f"{BACKEND_URL}/docs/",
-        json={
-            "title": title,
-            "type": extension,
-            "url": url,
-            "date": str(datetime.datetime.now()),
-            "author": dbutils.get_user_name(get_user_id(message)),
-        },
-    )
+    edited_id = context.get("edited_id")
+    if edited_id:
+        response = requests.put(
+            f"{BACKEND_URL}/docs/{edited_id}",
+            json={
+                "title": title,
+                "type": extension,
+                "url": url,
+                "date": str(datetime.datetime.now()),
+                "author": dbutils.get_user_name(get_user_id(message)),
+            },
+        )
+    else:
+        response = requests.post(
+            f"{BACKEND_URL}/docs/",
+            json={
+                "title": title,
+                "type": extension,
+                "url": url,
+                "date": str(datetime.datetime.now()),
+                "author": dbutils.get_user_name(get_user_id(message)),
+            },
+        )
     if response.status_code == 200:
         bot.send_message(message.chat.id, "Успешно отправлено!")
         dbutils.update_context(client_id, {"document_title": ""})
